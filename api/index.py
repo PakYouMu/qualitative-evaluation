@@ -4,6 +4,8 @@ from flask import Flask, render_template, request, redirect, url_for
 from datetime import datetime
 import gspread
 from urllib.parse import quote
+from gspread.exceptions import GSpreadException # <-- ADD THIS LINE
+from json import JSONDecodeError # <-- AND THIS LINE
 from oauth2client.service_account import ServiceAccountCredentials
 
 STATIC_IMAGE_FOLDER = 'static/evaluation_images'
@@ -97,20 +99,18 @@ def evaluate_item(item_id=0):
 
 @app.route('/submit', methods=['POST'])
 def submit_evaluation():
-    # First, get the form data we'll need for the redirect
     form_data = request.form
     next_item_id_str = form_data.get('next_item_id')
 
-    # 1. All Google Sheets operations are now safely inside the try block.
     try:
+        # Step 1: Connect to Google Sheets
         client = get_sheets_client()
         if not client:
-            # If connection fails, log it and show an error page.
-            print("Error submitting evaluation: Could not get Google Sheets client.")
+            print("Submit Error: Could not get Google Sheets client.")
             return "Could not connect to Google Sheets. Check server logs.", 500
         
+        # Step 2: Open the sheet and prepare the data
         sheet = client.open("Image Evaluations").sheet1
-
         new_row = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             form_data.get('eval_id'), form_data.get('item_class'), 
@@ -119,16 +119,18 @@ def submit_evaluation():
             form_data.get('comparison_rating'), form_data.get('comments', '').strip()
         ]
         
-        # This is the only part that really needs the try...except
+        # Step 3: Write the data
         sheet.append_row(new_row)
+        print("Successfully appended a row to Google Sheets.")
 
-    except Exception as e:
-        # This will now only catch REAL errors from gspread/Google
-        print(f"Error submitting evaluation: {e}")
-        return "An error occurred while saving your evaluation. Check the server logs.", 500
+    # This 'except' block is now specific. It will ONLY catch errors
+    # related to Google Sheets (GSpreadException) or bad credentials (JSONDecodeError).
+    # It will IGNORE the special exception from redirect().
+    except (GSpreadException, JSONDecodeError) as e:
+        print(f"A specific error occurred while saving to Google Sheets: {e}")
+        return "An error occurred while saving your evaluation. Please check the server logs.", 500
 
-    # 2. The redirect logic is now OUTSIDE the try block.
-    # This code will only run if the 'try' block completed successfully.
+    # Step 4: If the 'try' block succeeded, redirect the user.
     if next_item_id_str:
         return redirect(url_for('evaluate_item', item_id=int(next_item_id_str)))
     else:
