@@ -3,6 +3,7 @@ import json
 from flask import Flask, render_template, request, redirect, url_for
 from datetime import datetime
 import gspread
+import traceback 
 from urllib.parse import quote
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -100,7 +101,7 @@ def submit_evaluation():
     next_item_id_str = form_data.get('next_item_id')
 
     try:
-        # Now, this single try...except block will catch EVERYTHING.
+        # This block now ONLY handles the part that can fail: Google Sheets.
         client = get_sheets_client()
         sheet = client.open("Image Evaluations").sheet1
         new_row = [
@@ -115,11 +116,14 @@ def submit_evaluation():
         print("Successfully appended a row to Google Sheets.")
 
     except Exception as e:
-        # This will now catch the REAL error and give us a proper traceback.
+        # This will now ONLY catch REAL errors (e.g., from gspread).
         print(f"A REAL error occurred while saving to Google Sheets: {e}")
+        # This new line will print a full, detailed traceback to the logs.
+        traceback.print_exc()
         return "An error occurred while saving your evaluation. Please check the server logs.", 500
 
-    # If the 'try' block succeeded, redirect the user.
+    # If the 'try' block completes without any errors, the code continues HERE.
+    # The redirect calls are now safely outside the try/except block.
     if next_item_id_str:
         return redirect(url_for('evaluate_item', item_id=int(next_item_id_str)))
     else:
