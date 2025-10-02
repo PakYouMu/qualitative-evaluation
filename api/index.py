@@ -3,6 +3,7 @@ import json
 from flask import Flask, render_template, request, redirect, url_for
 from datetime import datetime
 import gspread
+from urllib.parse import quote
 from oauth2client.service_account import ServiceAccountCredentials
 
 STATIC_IMAGE_FOLDER = 'static/evaluation_images'
@@ -15,19 +16,14 @@ EVALUATION_ITEMS = []
 
 def load_evaluation_items():
     """
-    Scans the FLAT 'evaluation_images' folder from the REPOSITORY,
-    parses the filenames, and builds a list of public GitHub Raw URLs.
-    This is the final, 100% free, scalable version with the CORRECT 'refs/heads/' path.
+    Final version with URL quoting to handle any special characters in filenames.
     """
     print("--- Loading items by building public GitHub Raw URLs ---")
     
-    # --- CONFIGURATION FOR GITHUB ---
     GITHUB_USERNAME = "PakYouMu"
     IMAGE_REPO_NAME = "qualitative-evaluation-images"
-    BRANCH_NAME = "main" # This is used in the URL below
-    # --- END OF GITHUB CONFIGURATION ---
+    BRANCH_NAME = "main"
 
-    # We still scan the local folder to get the list of filenames to process.
     image_folder_path = os.path.join(os.path.dirname(__file__), '..', STATIC_IMAGE_FOLDER)
 
     if not os.path.isdir(image_folder_path):
@@ -35,18 +31,16 @@ def load_evaluation_items():
         return []
         
     image_data = []
-    # We read the filenames from the repo to get the metadata
     for filename in os.listdir(image_folder_path):
         if filename.lower().endswith(".png"):
             try:
-                # Filename format: ClassName__MetricName__CaseName.png
                 base_name = filename[:-4]
                 class_part, metric_part, case_part = base_name.split('__')
                 class_name = class_part.replace('_', ' ')
                 
-                # --- THIS IS YOUR CORRECTED LINE ---
-                # It now includes the '/refs/heads/' path that you discovered.
-                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/refs/heads/{BRANCH_NAME}/static/evaluation_images/{filename}"
+                # --- FINAL FIX: URL-safe quoting of the filename ---
+                safe_filename = quote(filename)
+                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/refs/heads/{BRANCH_NAME}/static/evaluation_images/{safe_filename}"
                 
                 image_data.append({
                     "metric": metric_part,
@@ -57,10 +51,8 @@ def load_evaluation_items():
             except Exception as e:
                 print(f"Warning: Could not parse filename '{filename}'. Skipping. Error: {e}")
 
-    # Sort the data logically
     image_data.sort(key=lambda x: (x['class'], x['metric'], x['case']))
     
-    # Add unique IDs
     for i, item in enumerate(image_data):
         class_abbr = CLASS_ABBREVIATIONS.get(item['class'], 'UNK')
         item['eval_id'] = f"{class_abbr}-{item['metric'].upper()}-{item['case']}"
