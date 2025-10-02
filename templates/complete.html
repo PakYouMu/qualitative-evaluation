@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluation Complete</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="complete-container">
+            <div class="complete-card">
+                <div class="complete-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h1 class="complete-title">Evaluation Complete!</h1>
+                <p class="complete-description">
+                    Thank you for completing the image evaluation. Your responses have been saved successfully.
+                </p>
+                <div class="complete-actions">
+                    <a href="{{ url_for('reset_progress') }}" class="btn btn-primary">
+                        Start New Evaluation
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        Return to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

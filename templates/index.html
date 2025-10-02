@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Evaluation ({{ item_id + 1 }} of {{ total_items }})</title>
+    <style>
+        /* --- Modern CSS Variables & Theme --- */
+        :root {
+            /* Color Palette */
+            --brand-primary-dark: oklch(0.5216 0.1421 150.46);
+            --brand-primary-light: oklch(0.6532 0.1421 150.46);
+            --success-color: #2dce89;
+            --danger-color: #f5365c;
+
+            /* Neutral Palette */
+            --background: #f8f9fe; /* Slightly cooler background */
+            --surface: #ffffff;
+            --border-color: #dee2e6; /* Softer border color */
+            --text-primary: #212529; /* Higher contrast text */
+            --text-secondary: #6c757d;
+
+            /* Spacing & Sizing (8-Point Grid System) */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* Shadows & Transitions */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Main Layout --- */
+        .page-wrapper {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* --- Left Column: Image Viewer --- */
+        .image-viewer {
+            flex: 75%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--brand-primary-dark);
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+            padding: var(--spacing-lg);
+        }
+
+        .image-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            transform-origin: center center;
+        }
+
+        .image-viewer img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .image-viewer.grabbing {
+            cursor: grabbing !important;
+        }
+
+        /* Zoom Controls */
+        .zoom-controls {
+            position: absolute;
+            bottom: var(--spacing-xl);
+            right: var(--spacing-xl);
+            display: flex;
+            gap: var(--spacing-sm);
+            background: rgba(255, 255, 255, 0.85); /* Slightly more transparent */
+            padding: var(--spacing-sm);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--surface);
+            color: var(--text-primary);
+            border-radius: var(--spacing-sm);
+            cursor: pointer;
+            font-size: 18px;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zoom-btn:hover {
+            background: var(--brand-primary-dark);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .zoom-level {
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-md);
+            font-weight: 600;
+            min-width: 60px;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        /* --- Right Column: Form --- */
+        .form-container {
+            flex: 25%;
+            padding: var(--spacing-xl);
+            background: var(--surface);
+            overflow-y: auto;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.07);
+        }
+
+        /* Custom Scrollbar */
+        .form-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .form-container::-webkit-scrollbar-track {
+            background: var(--background);
+        }
+        .form-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 8px;
+        }
+        .form-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* --- Header --- */
+        .header {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .item-counter {
+            background-color: var(--brand-primary-dark);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: var(--transition-fast);
+        }
+
+        .eval-id {
+            background: var(--background);
+            padding: var(--spacing-md);
+            border-radius: var(--spacing-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .eval-id strong {
+            color: var(--brand-primary-dark);
+            transition: var(--transition-fast);
+        }
+
+        /* --- Form Sections --- */
+        .form-section {
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            background: var(--background);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+        }
+        .form-section:hover {
+            border-color: #ced4da;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-section h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+        }
+
+        /* --- Radio Buttons --- */
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--surface);
+            border: 2px solid var(--border-color);
+            border-radius: var(--spacing-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .radio-label:hover {
+            border-color: var(--random-accent-color, var(--brand-primary-light));
+            background: color-mix(in srgb, var(--random-accent-color, var(--brand-primary-light)) 10%, transparent);
+        }
+
+        .radio-label input[type="radio"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            margin-right: var(--spacing-md);
+            position: relative;
+            transition: var(--transition-fast);
+        }
+
+        .radio-label input[type="radio"]:checked {
+            border-color: var(--random-accent-color, var(--brand-primary-dark));
+            background-color: var(--random-accent-color, var(--brand-primary-dark));
+        }
+        .radio-label input[type="radio"]:checked::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .radio-label:has(input:checked) {
+            border-color: var(--random-accent-color, var(--brand-primary-dark));
+            background: color-mix(in srgb, var(--random-accent-color, var(--brand-primary-dark)) 10%, transparent);
+        }
+
+        /* --- Rating Stars --- */
+        .rating-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-group b {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rating-options {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        .rating-options .radio-label {
+            flex: 1;
+            justify-content: center;
+            padding: var(--spacing-sm);
+            font-weight: 600;
+        }
+
+        /* --- Textarea --- */
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: var(--spacing-md);
+            font-size: 14px;
+            font-family: inherit;
+            border: 2px solid var(--border-color);
+            border-radius: var(--spacing-sm);
+            resize: vertical;
+            transition: var(--transition-fast);
+            background: var(--surface);
+        }
+        textarea:focus {
+            outline: none;
+            border-color: var(--brand-primary-dark);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary-dark) 15%, transparent);
+        }
+
+        /* --- Navigation Buttons --- */
+        .nav {
+            margin-top: var(--spacing-xl);
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .nav button,
+        .nav a {
+            flex: 1;
+            padding: 14px var(--spacing-lg);
+            border: none;
+            border-radius: var(--spacing-sm);
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .nav button {
+            background: var(--success-color);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+        .nav button:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav a {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+        .nav a:hover:not(.disabled) {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+        .nav a.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: var(--background);
+        }
+
+        /* --- Footer --- */
+        .footer {
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .footer a {
+            color: var(--brand-primary-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            .image-viewer,
+            .form-container {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ... (Your HTML body content remains exactly the same) ... -->
+<div class="page-wrapper">
+    <div class="image-viewer" id="imageViewer">
+        <div class="image-container" id="imageContainer">
+            <img id="evaluationImage" src="{{ url_for('static', filename=item.web_path) }}" alt="Evaluation Image">
+        </div>
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomOut()">−</button>
+            <div class="zoom-level" id="zoomLevel">100%</div>
+            <button class="zoom-btn" onclick="zoomIn()">+</button>
+            <button class="zoom-btn" onclick="resetZoom()">⟲</button>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="header">
+            <div class="header-top">
+                <h3>Image Evaluation</h3>
+                <span class="item-counter">{{ item_id + 1 }} / {{ total_items }}</span>
+            </div>
+            <div class="eval-id">
+                ID: <strong>{{ item.eval_id }}</strong>
+            </div>
+        </div>
+
+        <form action="/submit" method="post">
+            <input type="hidden" name="current_item_id" value="{{ item_id }}">
+            <input type="hidden" name="eval_id" value="{{ item.eval_id }}">
+            <input type="hidden" name="item_class" value="{{ item.class }}">
+            <input type="hidden" name="item_metric" value="{{ item.metric }}">
+            <input type="hidden" name="item_case" value="{{ item.case }}">
+            {% if next_id is not none %}
+                <input type="hidden" name="next_item_id" value="{{ next_id }}">
+            {% endif %}
+
+            <div class="form-section">
+                <h4>1. Comparative Rating (Test vs. Comparison)</h4>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="comparative_rating" value="test_much_better" required>
+                        Test is much better
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="comparative_rating" value="test_slightly_better">
+                        Test is slightly better
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="comparative_rating" value="equal">
+                        They are equal
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="comparative_rating" value="comparison_slightly_better">
+                        Comparison is slightly better
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="comparative_rating" value="comparison_much_better">
+                        Comparison is much better
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4>2. Absolute Quality Rating (1-5)</h4>
+                <div class="rating-group">
+                    <b>Test Image Rating</b>
+                    <div class="rating-options">
+                        <label class="radio-label">
+                            <input type="radio" name="test_rating" value="1" required>
+                            1
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="test_rating" value="2">
+                            2
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="test_rating" value="3">
+                            3
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="test_rating" value="4">
+                            4
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="test_rating" value="5">
+                            5
+                        </label>
+                    </div>
+                </div>
+                <div class="rating-group">
+                    <b>Comparison Image Rating</b>
+                    <div class="rating-options">
+                        <label class="radio-label">
+                            <input type="radio" name="comparison_rating" value="1" required>
+                            1
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="comparison_rating" value="2">
+                            2
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="comparison_rating" value="3">
+                            3
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="comparison_rating" value="4">
+                            4
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="comparison_rating" value="5">
+                            5
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4>3. Comments / Observed Flaws</h4>
+                <textarea name="comments" placeholder="Optional: Describe any issues or notable features..."></textarea>
+            </div>
+
+            <div class="nav">
+                {% if previous_id is not none %}
+                    <a href="{{ url_for('evaluate_item', item_id=previous_id) }}">← Previous</a>
+                {% else %}
+                    <a class="disabled">← Previous</a>
+                {% endif %}
+                <button type="submit">
+                    {% if next_id is not none %}
+                        Save & Next →
+                    {% else %}
+                        Save & Finish ✓
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+        
+        <div class="footer">
+            <p><strong>Controls:</strong> Scroll to zoom • Drag to pan • Double-click to reset</p>
+            <p>Need to restart? Visit the <a href="{{ url_for('reset_progress') }}">reset page</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- Pan & Zoom Functionality ---
+(function() {
+    const viewer = document.getElementById('imageViewer');
+    if (!viewer) return;
+    const container = document.getElementById('imageContainer');
+    const image = document.getElementById('evaluationImage');
+    const zoomLevelDisplay = document.getElementById('zoomLevel');
+    
+    let scale = 1, translateX = 0, translateY = 0, isPanning = false;
+    let startX = 0, startY = 0, lastX = 0, lastY = 0;
+    
+    const MIN_SCALE = 0.5, MAX_SCALE = 10, ZOOM_SPEED = 0.1;
+    
+    image.onload = () => centerImage();
+    
+    function updateTransform() {
+        container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        zoomLevelDisplay.textContent = `${Math.round(scale * 100)}%`;
+    }
+    
+    function centerImage() {
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
+    }
+    
+    viewer.addEventListener('wheel', e => {
+        e.preventDefault();
+        const rect = viewer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left - (rect.width / 2);
+        const mouseY = e.clientY - rect.top - (rect.height / 2);
+        const delta = e.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED;
+        const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (1 + delta)));
+        
+        if (newScale !== scale) {
+            const pointX = (mouseX - translateX) / scale;
+            const pointY = (mouseY - translateY) / scale;
+            scale = newScale;
+            translateX = mouseX - pointX * scale;
+            translateY = mouseY - pointY * scale;
+            updateTransform();
+        }
+    });
+    
+    viewer.addEventListener('mousedown', e => {
+        if (e.button === 0) {
+            isPanning = true;
+            viewer.classList.add('grabbing');
+            startX = e.clientX;
+            startY = e.clientY;
+            lastX = translateX;
+            lastY = translateY;
+            e.preventDefault();
+        }
+    });
+    
+    document.addEventListener('mousemove', e => {
+        if (isPanning) {
+            translateX = lastX + (e.clientX - startX);
+            translateY = lastY + (e.clientY - startY);
+            updateTransform();
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (isPanning) {
+            isPanning = false;
+            viewer.classList.remove('grabbing');
+        }
+    });
+    
+    viewer.addEventListener('dblclick', () => {
+        scale = 1;
+        centerImage();
+    });
+    
+    window.zoomIn = () => { scale = Math.min(MAX_SCALE, scale * 1.2); updateTransform(); };
+    window.zoomOut = () => { scale = Math.max(MIN_SCALE, scale / 1.2); updateTransform(); };
+    window.resetZoom = () => { scale = 1; centerImage(); };
+    
+    document.addEventListener('keydown', e => {
+        if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+            const keyMap = { '+': zoomIn, '=': zoomIn, '-': zoomOut, '_': zoomOut, '0': resetZoom };
+            if (keyMap[e.key]) keyMap[e.key]();
+        }
+    });
+    
+    if (image.complete) centerImage();
+})();
+
+// --- Random Gradient & Theming ---
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        const rootStyles = getComputedStyle(document.documentElement);
+        const sharedColor1 = rootStyles.getPropertyValue('--brand-primary-dark').trim();
+        const sharedColor2 = rootStyles.getPropertyValue('--brand-primary-light').trim();
+
+        // --- Part 1: Random Spiral Background ---
+        const viewer = document.querySelector('.image-viewer');
+        if (viewer) {
+            const randomStartAngle = Math.floor(Math.random() * 360);
+            const numStops = Math.floor(Math.random() * (10 - 4 + 1)) + 4;
+            const angleStep = 360 / numStops;
+            let stops = Array.from({ length: numStops }, (_, i) => 
+                `${i % 2 === 0 ? sharedColor1 : sharedColor2} ${i * angleStep}deg`
+            );
+            stops.push(`${sharedColor1} 360deg`);
+            viewer.style.background = `conic-gradient(from ${randomStartAngle}deg at 50% 50%, ${stops.join(', ')})`;
+        }
+
+        // --- Part 2: Random Counter Button Gradient ---
+        const counter = document.querySelector('.item-counter');
+        if (counter) {
+            const randomAngle = Math.floor(Math.random() * 360);
+            counter.style.background = `linear-gradient(${randomAngle}deg, ${sharedColor1}, ${sharedColor2})`;
+        }
+
+        // --- Part 3: Random Accent Colors for Form Sections (Accessibility-Aware) ---
+        const formSections = document.querySelectorAll('.form-section');
+        formSections.forEach(section => {
+            if (section.querySelector('.radio-group') || section.querySelector('.rating-options')) {
+                // Generate a random hue that avoids yellows to ensure good contrast
+                let randomHue;
+                do {
+                    randomHue = Math.floor(Math.random() * 360);
+                } while (randomHue > 60 && randomHue < 120); // Avoid the yellow/lime green range
+                
+                // Use a higher chroma for more vibrant color
+                const randomAccentColor = `oklch(0.6 0.2 ${randomHue})`;
+                section.style.setProperty('--random-accent-color', randomAccentColor);
+            }
+        });
+
+        // --- Part 4: Random Gradient for Eval ID Text ---
+        const evalIdStrong = document.querySelector('.eval-id strong');
+        if (evalIdStrong) {
+            const randomAngle = Math.floor(Math.random() * 360);
+            const gradient = `linear-gradient(${randomAngle}deg, ${sharedColor1}, ${sharedColor2})`;
+            evalIdStrong.style.background = gradient;
+            evalIdStrong.style.webkitBackgroundClip = 'text';
+            evalIdStrong.style.backgroundClip = 'text';
+            evalIdStrong.style.color = 'transparent';
+        }
+    });
+})();
+</script>
+
+</body>
+</html>
