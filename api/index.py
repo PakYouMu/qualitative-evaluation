@@ -62,19 +62,18 @@ def load_evaluation_items():
     return image_data
 
 def get_sheets_client():
-    try:
-        creds_json = os.environ.get('GOOGLE_SHEETS_CREDENTIALS')
-        if not creds_json:
-            print("CRITICAL ERROR: GOOGLE_SHEETS_CREDENTIALS environment variable not found.")
-            return None
-        creds_dict = json.loads(creds_json)
-        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        client = gspread.authorize(creds)
-        return client
-    except Exception as e:
-        print(f"Error authenticating with Google Sheets: {e}")
-        return None
+    # We remove the try...except block from here. If something fails,
+    # it will now raise a proper exception that the calling function will handle.
+    creds_json = os.environ.get('GOOGLE_SHEETS_CREDENTIALS')
+    if not creds_json:
+        # We can raise a specific error here to be very clear.
+        raise ValueError("CRITICAL ERROR: GOOGLE_SHEETS_CREDENTIALS environment variable not found.")
+        
+    creds_dict = json.loads(creds_json)
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+    return client
 
 app = Flask(__name__, static_folder='../static', template_folder='../templates')
 EVALUATION_ITEMS = load_evaluation_items()
@@ -101,11 +100,8 @@ def submit_evaluation():
     next_item_id_str = form_data.get('next_item_id')
 
     try:
+        # Now, this single try...except block will catch EVERYTHING.
         client = get_sheets_client()
-        if not client:
-            print("Submit Error: Could not get Google Sheets client.")
-            return "Could not connect to Google Sheets. Check server logs.", 500
-        
         sheet = client.open("Image Evaluations").sheet1
         new_row = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -115,23 +111,19 @@ def submit_evaluation():
             form_data.get('comparison_rating'), form_data.get('comments', '').strip()
         ]
         
-        # --- DEBUGGING STEP ---
-        # We will capture the response and print it to the logs.
-        response = sheet.append_row(new_row)
-        print(f"DEBUG: gspread response type: {type(response)}")
-        print(f"DEBUG: gspread response value: {response}")
-        # --- END OF DEBUGGING STEP ---
-
-        # The rest of the logic remains for now.
-        if next_item_id_str:
-            return redirect(url_for('evaluate_item', item_id=int(next_item_id_str)))
-        else:
-            return redirect(url_for('complete'))
+        sheet.append_row(new_row)
+        print("Successfully appended a row to Google Sheets.")
 
     except Exception as e:
-        # This will still catch the error, but our print statements will run first.
-        print(f"A specific error occurred while saving to Google Sheets: {e}")
+        # This will now catch the REAL error and give us a proper traceback.
+        print(f"A REAL error occurred while saving to Google Sheets: {e}")
         return "An error occurred while saving your evaluation. Please check the server logs.", 500
+
+    # If the 'try' block succeeded, redirect the user.
+    if next_item_id_str:
+        return redirect(url_for('evaluate_item', item_id=int(next_item_id_str)))
+    else:
+        return redirect(url_for('complete'))
 
 @app.route('/complete')
 def complete():
