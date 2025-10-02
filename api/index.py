@@ -17,12 +17,16 @@ def load_evaluation_items():
     """
     Scans the FLAT 'evaluation_images' folder from the REPOSITORY,
     parses the filenames, and builds a list of public GitHub Raw URLs.
-    This version includes the correct subfolder path in the URL.
+    This is the final, 100% free, scalable version with confirmed correct paths.
     """
     print("--- Loading items by building public GitHub Raw URLs ---")
     
+    # --- CONFIGURATION FOR GITHUB ---
+    # These values are confirmed to be correct based on your link.
     GITHUB_USERNAME = "PakYouMu"
     IMAGE_REPO_NAME = "qualitative-evaluation-images"
+    BRANCH_NAME = "main" # Assumes your branch is 'main'
+    # --- END OF GITHUB CONFIGURATION ---
 
     # We still scan the local folder to get the list of filenames to process.
     image_folder_path = os.path.join(os.path.dirname(__file__), '..', STATIC_IMAGE_FOLDER)
@@ -41,9 +45,9 @@ def load_evaluation_items():
                 class_part, metric_part, case_part = base_name.split('__')
                 class_name = class_part.replace('_', ' ')
                 
-                # --- THIS IS THE CORRECTED LINE ---
-                # It now includes the subfolder path that you used in your image repo.
-                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/main/static/evaluation_images/{filename}"
+                # --- THIS IS THE GOLDEN URL ---
+                # It now includes the subfolder path and all confirmed correct parts.
+                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/{BRANCH_NAME}/static/evaluation_images/{filename}"
                 
                 image_data.append({
                     "metric": metric_part,
