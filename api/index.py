@@ -97,12 +97,20 @@ def evaluate_item(item_id=0):
 
 @app.route('/submit', methods=['POST'])
 def submit_evaluation():
+    # First, get the form data we'll need for the redirect
+    form_data = request.form
+    next_item_id_str = form_data.get('next_item_id')
+
+    # 1. All Google Sheets operations are now safely inside the try block.
     try:
-        form_data = request.form
         client = get_sheets_client()
         if not client:
+            # If connection fails, log it and show an error page.
+            print("Error submitting evaluation: Could not get Google Sheets client.")
             return "Could not connect to Google Sheets. Check server logs.", 500
+        
         sheet = client.open("Image Evaluations").sheet1
+
         new_row = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             form_data.get('eval_id'), form_data.get('item_class'), 
@@ -110,15 +118,21 @@ def submit_evaluation():
             form_data.get('comparative_rating'), form_data.get('test_rating'),
             form_data.get('comparison_rating'), form_data.get('comments', '').strip()
         ]
+        
+        # This is the only part that really needs the try...except
         sheet.append_row(new_row)
-        next_item_id_str = form_data.get('next_item_id')
-        if next_item_id_str:
-            return redirect(url_for('evaluate_item', item_id=int(next_item_id_str)))
-        else:
-            return redirect(url_for('complete'))
+
     except Exception as e:
+        # This will now only catch REAL errors from gspread/Google
         print(f"Error submitting evaluation: {e}")
         return "An error occurred while saving your evaluation. Check the server logs.", 500
+
+    # 2. The redirect logic is now OUTSIDE the try block.
+    # This code will only run if the 'try' block completed successfully.
+    if next_item_id_str:
+        return redirect(url_for('evaluate_item', item_id=int(next_item_id_str)))
+    else:
+        return redirect(url_for('complete'))
 
 @app.route('/complete')
 def complete():
