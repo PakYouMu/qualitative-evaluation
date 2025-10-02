@@ -47,7 +47,7 @@ def load_evaluation_items():
                 
                 # --- THIS IS THE GOLDEN URL ---
                 # It now includes the subfolder path and all confirmed correct parts.
-                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/{BRANCH_NAME}/static/evaluation_images/{filename}"
+                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/refs/heads/{BRANCH_NAME}/static/evaluation_images/{filename}"
                 
                 image_data.append({
                     "metric": metric_part,
