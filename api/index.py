@@ -5,64 +5,66 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# --- CONFIGURATION ---
 STATIC_IMAGE_FOLDER = 'static/evaluation_images'
 CLASS_ABBREVIATIONS = {
     'Copra Cake': 'CC', 'Cracked Corn': 'CORN', 'Feed Wheats': 'FW',
     'Hard Pollard': 'HP', 'Jocky Oats': 'JO', 'Rice Bran': 'RB', 'US Soya': 'SOY'
 }
-# --- END OF CONFIGURATION ---
 
 EVALUATION_ITEMS = []
 
 def load_evaluation_items():
     """
-    Scans the FLAT 'evaluation_images' folder, parses the descriptive filenames,
-    and returns a sorted list of items. This is the cloud-compatible version.
+    Scans the FLAT 'evaluation_images' folder from the REPOSITORY,
+    parses the filenames, and builds a list of public GitHub Raw URLs.
+    This version includes the correct subfolder path in the URL.
     """
-    print("--- Loading and preparing evaluation items from flat directory ---")
+    print("--- Loading items by building public GitHub Raw URLs ---")
+    
+    GITHUB_USERNAME = "PakYouMu"
+    IMAGE_REPO_NAME = "qualitative-evaluation-images"
+
+    # We still scan the local folder to get the list of filenames to process.
     image_folder_path = os.path.join(os.path.dirname(__file__), '..', STATIC_IMAGE_FOLDER)
 
     if not os.path.isdir(image_folder_path):
-        print(f"CRITICAL ERROR: The directory '{STATIC_IMAGE_FOLDER}' was not found.")
+        print(f"CRITICAL ERROR: The directory '{STATIC_IMAGE_FOLDER}' was not found in the main repo.")
         return []
         
     image_data = []
+    # We read the filenames from the repo to get the metadata
     for filename in os.listdir(image_folder_path):
         if filename.lower().endswith(".png"):
             try:
-                # New filename format: ClassName__MetricName__CaseName.png
-                base_name = filename[:-4]  # Remove .png extension
+                # Filename format: ClassName__MetricName__CaseName.png
+                base_name = filename[:-4]
                 class_part, metric_part, case_part = base_name.split('__')
-                
-                # Revert space replacement for display purposes
                 class_name = class_part.replace('_', ' ')
                 
-                web_path = f'evaluation_images/{filename}'
-
+                # --- THIS IS THE CORRECTED LINE ---
+                # It now includes the subfolder path that you used in your image repo.
+                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/main/static/evaluation_images/{filename}"
+                
                 image_data.append({
                     "metric": metric_part,
                     "class": class_name,
                     "case": case_part,
-                    "web_path": web_path
+                    "web_path": public_url
                 })
             except Exception as e:
                 print(f"Warning: Could not parse filename '{filename}'. Skipping. Error: {e}")
 
-    # Sort the data logically for the evaluation flow
+    # Sort the data logically
     image_data.sort(key=lambda x: (x['class'], x['metric'], x['case']))
     
-    # Add unique IDs to each item
+    # Add unique IDs
     for i, item in enumerate(image_data):
         class_abbr = CLASS_ABBREVIATIONS.get(item['class'], 'UNK')
         item['eval_id'] = f"{class_abbr}-{item['metric'].upper()}-{item['case']}"
         item['id'] = i
 
-    print(f" -> Found and prepared {len(image_data)} images.")
+    print(f" -> Successfully built {len(image_data)} public GitHub image URLs.")
     return image_data
-
-# --- [THE REST OF THE FILE IS IDENTICAL TO THE PREVIOUS VERSION] ---
-# --- GOOGLE SHEETS, FLASK APP INIT, ROUTES, ETC. ---
 
 def get_sheets_client():
     try:
