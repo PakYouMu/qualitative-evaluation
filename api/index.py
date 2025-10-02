@@ -4,8 +4,6 @@ from flask import Flask, render_template, request, redirect, url_for
 from datetime import datetime
 import gspread
 from urllib.parse import quote
-from gspread.exceptions import GSpreadException # <-- ADD THIS LINE
-from json import JSONDecodeError # <-- AND THIS LINE
 from oauth2client.service_account import ServiceAccountCredentials
 
 STATIC_IMAGE_FOLDER = 'static/evaluation_images'
@@ -103,13 +101,11 @@ def submit_evaluation():
     next_item_id_str = form_data.get('next_item_id')
 
     try:
-        # Step 1: Connect to Google Sheets
         client = get_sheets_client()
         if not client:
             print("Submit Error: Could not get Google Sheets client.")
             return "Could not connect to Google Sheets. Check server logs.", 500
         
-        # Step 2: Open the sheet and prepare the data
         sheet = client.open("Image Evaluations").sheet1
         new_row = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -119,22 +115,23 @@ def submit_evaluation():
             form_data.get('comparison_rating'), form_data.get('comments', '').strip()
         ]
         
-        # Step 3: Write the data
-        sheet.append_row(new_row)
-        print("Successfully appended a row to Google Sheets.")
+        # --- DEBUGGING STEP ---
+        # We will capture the response and print it to the logs.
+        response = sheet.append_row(new_row)
+        print(f"DEBUG: gspread response type: {type(response)}")
+        print(f"DEBUG: gspread response value: {response}")
+        # --- END OF DEBUGGING STEP ---
 
-    # This 'except' block is now specific. It will ONLY catch errors
-    # related to Google Sheets (GSpreadException) or bad credentials (JSONDecodeError).
-    # It will IGNORE the special exception from redirect().
-    except (GSpreadException, JSONDecodeError) as e:
+        # The rest of the logic remains for now.
+        if next_item_id_str:
+            return redirect(url_for('evaluate_item', item_id=int(next_item_id_str)))
+        else:
+            return redirect(url_for('complete'))
+
+    except Exception as e:
+        # This will still catch the error, but our print statements will run first.
         print(f"A specific error occurred while saving to Google Sheets: {e}")
         return "An error occurred while saving your evaluation. Please check the server logs.", 500
-
-    # Step 4: If the 'try' block succeeded, redirect the user.
-    if next_item_id_str:
-        return redirect(url_for('evaluate_item', item_id=int(next_item_id_str)))
-    else:
-        return redirect(url_for('complete'))
 
 @app.route('/complete')
 def complete():
