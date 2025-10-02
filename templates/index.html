@@ -404,7 +404,6 @@
 </head>
 <body>
 
-<!-- ... (Your HTML body content remains exactly the same) ... -->
 <div class="page-wrapper">
     <div class="image-viewer" id="imageViewer">
         <div class="image-container" id="imageContainer">
@@ -542,110 +541,148 @@
         
         <div class="footer">
             <p><strong>Controls:</strong> Scroll to zoom • Drag to pan • Double-click to reset</p>
+            <p>Need to start over? <a href="#" onclick="localStorage.removeItem('qualEval_lastCompletedId'); window.location.href='/';">Reset Progress</a></p>
         </div>
     </div>
 </div>
 
 <script>
-// --- Pan & Zoom Functionality ---
+// --- SCRIPT 1: CLIENT-SIDE PROGRESS SAVING & RESUMING ---
+// This script runs immediately to check for redirects.
 (function() {
-    const viewer = document.getElementById('imageViewer');
-    if (!viewer) return;
-    const container = document.getElementById('imageContainer');
-    const image = document.getElementById('evaluationImage');
-    const zoomLevelDisplay = document.getElementById('zoomLevel');
-    
-    let scale = 1, translateX = 0, translateY = 0, isPanning = false;
-    let startX = 0, startY = 0, lastX = 0, lastY = 0;
-    
-    const MIN_SCALE = 0.5, MAX_SCALE = 10, ZOOM_SPEED = 0.1;
-    
-    image.onload = () => centerImage();
-    
-    function updateTransform() {
-        container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-        zoomLevelDisplay.textContent = `${Math.round(scale * 100)}%`;
+    const progressKey = 'qualEval_lastCompletedId';
+    const currentItemId = {{ item_id }};
+    const previousItemId = {{ previous_id if previous_id is not none else 'null' }};
+
+    // Part 1: Save progress from the previous step
+    if (previousItemId !== null) {
+        localStorage.setItem(progressKey, previousItemId);
+        console.log(`Progress saved. Last completed ID: ${previousItemId}`);
     }
-    
-    function centerImage() {
-        translateX = 0;
-        translateY = 0;
-        updateTransform();
+
+    // Part 2: Resume session if visiting the first page
+    if (currentItemId === 0) {
+        const savedProgress = localStorage.getItem(progressKey);
+        if (savedProgress !== null) {
+            const lastCompletedId = parseInt(savedProgress, 10);
+            const nextId = lastCompletedId + 1;
+            if (nextId > 0 && nextId < {{ total_items }}) {
+                console.log(`Resuming session. Redirecting to item ${nextId}...`);
+                window.location.href = `/evaluate/${nextId}`;
+            }
+        }
     }
-    
-    viewer.addEventListener('wheel', e => {
-        e.preventDefault();
-        const rect = viewer.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left - (rect.width / 2);
-        const mouseY = e.clientY - rect.top - (rect.height / 2);
-        const delta = e.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED;
-        const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (1 + delta)));
-        
-        if (newScale !== scale) {
-            const pointX = (mouseX - translateX) / scale;
-            const pointY = (mouseY - translateY) / scale;
-            scale = newScale;
-            translateX = mouseX - pointX * scale;
-            translateY = mouseY - pointY * scale;
-            updateTransform();
-        }
-    });
-    
-    viewer.addEventListener('mousedown', e => {
-        if (e.button === 0) {
-            isPanning = true;
-            viewer.classList.add('grabbing');
-            startX = e.clientX;
-            startY = e.clientY;
-            lastX = translateX;
-            lastY = translateY;
-            e.preventDefault();
-        }
-    });
-    
-    document.addEventListener('mousemove', e => {
-        if (isPanning) {
-            translateX = lastX + (e.clientX - startX);
-            translateY = lastY + (e.clientY - startY);
-            updateTransform();
-        }
-    });
-    
-    document.addEventListener('mouseup', () => {
-        if (isPanning) {
-            isPanning = false;
-            viewer.classList.remove('grabbing');
-        }
-    });
-    
-    viewer.addEventListener('dblclick', () => {
-        scale = 1;
-        centerImage();
-    });
-    
-    window.zoomIn = () => { scale = Math.min(MAX_SCALE, scale * 1.2); updateTransform(); };
-    window.zoomOut = () => { scale = Math.max(MIN_SCALE, scale / 1.2); updateTransform(); };
-    window.resetZoom = () => { scale = 1; centerImage(); };
-    
-    document.addEventListener('keydown', e => {
-        if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
-            const keyMap = { '+': zoomIn, '=': zoomIn, '-': zoomOut, '_': zoomOut, '0': resetZoom };
-            if (keyMap[e.key]) keyMap[e.key]();
-        }
-    });
-    
-    if (image.complete) centerImage();
 })();
 
-// --- Random Gradient & Theming ---
-(function() {
-    document.addEventListener('DOMContentLoaded', function() {
+
+// --- SCRIPT 2 & 3: PAN & ZOOM and RANDOM THEMING ---
+// These scripts wait for the page's DOM to be fully loaded before running.
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- Define Shared Elements ---
+    // We define variables for elements used by multiple scripts here to avoid conflicts.
+    const viewer = document.getElementById('imageViewer');
+    
+    // --- Pan & Zoom Functionality ---
+    (function() {
+        if (!viewer) return;
+        const container = document.getElementById('imageContainer');
+        const image = document.getElementById('evaluationImage');
+        const zoomLevelDisplay = document.getElementById('zoomLevel');
+        
+        let scale = 1, translateX = 0, translateY = 0, isPanning = false;
+        let startX = 0, startY = 0, lastX = 0, lastY = 0;
+        
+        const MIN_SCALE = 0.5, MAX_SCALE = 10, ZOOM_SPEED = 0.1;
+        
+        const updateTransform = () => {
+            if (container) {
+                container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+            if (zoomLevelDisplay) {
+                zoomLevelDisplay.textContent = `${Math.round(scale * 100)}%`;
+            }
+        };
+        
+        const centerImage = () => {
+            translateX = 0;
+            translateY = 0;
+            updateTransform();
+        };
+
+        if (image) {
+            if (image.complete) {
+                centerImage();
+            } else {
+                image.onload = () => centerImage();
+            }
+        }
+        
+        viewer.addEventListener('wheel', e => {
+            e.preventDefault();
+            const rect = viewer.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left - (rect.width / 2);
+            const mouseY = e.clientY - rect.top - (rect.height / 2);
+            const delta = e.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED;
+            const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (1 + delta)));
+            
+            if (newScale !== scale) {
+                const pointX = (mouseX - translateX) / scale;
+                const pointY = (mouseY - translateY) / scale;
+                scale = newScale;
+                translateX = mouseX - pointX * scale;
+                translateY = mouseY - pointY * scale;
+                updateTransform();
+            }
+        });
+        
+        viewer.addEventListener('mousedown', e => {
+            if (e.button === 0) {
+                isPanning = true;
+                viewer.classList.add('grabbing');
+                startX = e.clientX;
+                startY = e.clientY;
+                lastX = translateX;
+                lastY = translateY;
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('mousemove', e => {
+            if (isPanning) {
+                translateX = lastX + (e.clientX - startX);
+                translateY = lastY + (e.clientY - startY);
+                updateTransform();
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (isPanning) {
+                isPanning = false;
+                viewer.classList.remove('grabbing');
+            }
+        });
+        
+        viewer.addEventListener('dblclick', () => { scale = 1; centerImage(); });
+        
+        window.zoomIn = () => { scale = Math.min(MAX_SCALE, scale * 1.2); updateTransform(); };
+        window.zoomOut = () => { scale = Math.max(MIN_SCALE, scale / 1.2); updateTransform(); };
+        window.resetZoom = () => { scale = 1; centerImage(); };
+        
+        document.addEventListener('keydown', e => {
+            if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+                const keyMap = { '+': zoomIn, '=': zoomIn, '-': zoomOut, '_': zoomOut, '0': resetZoom };
+                if (keyMap[e.key]) keyMap[e.key]();
+            }
+        });
+    })();
+
+    // --- Random Gradient & Theming ---
+    (function() {
         const rootStyles = getComputedStyle(document.documentElement);
         const sharedColor1 = rootStyles.getPropertyValue('--brand-primary-dark').trim();
         const sharedColor2 = rootStyles.getPropertyValue('--brand-primary-light').trim();
 
-        // --- Part 1: Random Spiral Background ---
-        const viewer = document.querySelector('.image-viewer');
         if (viewer) {
             const randomStartAngle = Math.floor(Math.random() * 360);
             const numStops = Math.floor(Math.random() * (10 - 4 + 1)) + 4;
@@ -657,30 +694,24 @@
             viewer.style.background = `conic-gradient(from ${randomStartAngle}deg at 50% 50%, ${stops.join(', ')})`;
         }
 
-        // --- Part 2: Random Counter Button Gradient ---
         const counter = document.querySelector('.item-counter');
         if (counter) {
             const randomAngle = Math.floor(Math.random() * 360);
             counter.style.background = `linear-gradient(${randomAngle}deg, ${sharedColor1}, ${sharedColor2})`;
         }
 
-        // --- Part 3: Random Accent Colors for Form Sections (Accessibility-Aware) ---
         const formSections = document.querySelectorAll('.form-section');
         formSections.forEach(section => {
             if (section.querySelector('.radio-group') || section.querySelector('.rating-options')) {
-                // Generate a random hue that avoids yellows to ensure good contrast
                 let randomHue;
                 do {
                     randomHue = Math.floor(Math.random() * 360);
-                } while (randomHue > 60 && randomHue < 120); // Avoid the yellow/lime green range
-                
-                // Use a higher chroma for more vibrant color
+                } while (randomHue > 60 && randomHue < 120);
                 const randomAccentColor = `oklch(0.6 0.2 ${randomHue})`;
                 section.style.setProperty('--random-accent-color', randomAccentColor);
             }
         });
 
-        // --- Part 4: Random Gradient for Eval ID Text ---
         const evalIdStrong = document.querySelector('.eval-id strong');
         if (evalIdStrong) {
             const randomAngle = Math.floor(Math.random() * 360);
@@ -690,9 +721,8 @@
             evalIdStrong.style.backgroundClip = 'text';
             evalIdStrong.style.color = 'transparent';
         }
-    });
-})();
+    })();
+});
 </script>
-
 </body>
 </html>
