@@ -131,4 +131,5 @@ def submit_evaluation():
 
 @app.route('/complete')
 def complete():
-    return "<h1>Evaluation Complete!</h1><p>Thank you for your time. You can now close this window.</p>"
+    """Renders the beautiful, themed completion page."""
+    return render_template('complete.html')
