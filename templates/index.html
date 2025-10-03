@@ -406,7 +406,8 @@
         
         <div class="footer">
             <p><strong>Controls:</strong> Scroll to zoom • Drag to pan • Double-click to reset</p>
-            <p>Need to start over? <a href="#" onclick="localStorage.removeItem('qualEval_lastCompletedId'); window.location.href='/';">Reset Progress</a></p>
+            <!-- MODIFICATION: Reset link now also clears the session storage key to re-trigger instructions -->
+            <p>Need to start over? <a href="#" onclick="localStorage.removeItem('qualEval_lastCompletedId'); sessionStorage.removeItem('evaluatorSessionStarted'); window.location.href='/';">Reset Progress</a></p>
         </div>
     </div>
 </div>
@@ -474,14 +475,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById("instructionsModal");
         const btn = document.getElementById("openInstructionsBtn");
         const span = document.getElementsByClassName("close-btn")[0];
-        const visitedKey = 'evaluatorHasVisited'; // Key for localStorage
+        // MODIFICATION: Use sessionStorage to show instructions once per session
+        const sessionKey = 'evaluatorSessionStarted';
         if (!modal || !btn || !span) return;
 
-        // Check if the user is visiting for the first time
-        const hasVisited = localStorage.getItem(visitedKey);
-        if (!hasVisited) {
-            modal.style.display = "block"; // Open the modal automatically
-            localStorage.setItem(visitedKey, 'true'); // Set the flag so it doesn't open again
+        const sessionStarted = sessionStorage.getItem(sessionKey);
+        if (!sessionStarted) {
+            modal.style.display = "block"; // Open the modal automatically on new session
+            sessionStorage.setItem(sessionKey, 'true'); // Set flag for this session
         }
 
         btn.onclick = function() { modal.style.display = "block"; }
