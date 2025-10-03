@@ -169,7 +169,6 @@
         /* --- Header --- */
         .header {
             margin-bottom: var(--spacing-xl);
-            /* MODIFICATION: Added position relative to anchor the new button */
             position: relative;
         }
 
@@ -264,11 +263,11 @@
         .footer a { color: var(--brand-primary-dark); text-decoration: none; font-weight: 600; }
         .footer a:hover { text-decoration: underline; }
 
-        /* --- MODIFICATION: New styles for corner Instructions Button & Modal --- */
+        /* --- Styles for Instructions Button & Modal --- */
         .instructions-btn-corner {
             position: absolute;
-            top: 0;
-            right: 15px;
+            top: 0; /* You can adjust this value */
+            right: 0; /* You can adjust this value */
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -277,7 +276,7 @@
             color: var(--text-secondary);
             font-size: 16px;
             font-weight: bold;
-            font-family: serif; /* Gives a nice ? look */
+            font-family: serif;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -296,6 +295,12 @@
         .modal-content h3 { margin-bottom: var(--spacing-md); font-size: 1.75rem; }
         .modal-content h4 { margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm); font-size: 1.1rem; }
         .modal-content p, .modal-content ol, .modal-content ul { margin-bottom: var(--spacing-md); }
+        
+        /* MODIFICATION: Justified text for paragraphs inside the modal */
+        .modal-content p {
+            text-align: justify;
+        }
+
         .modal-content ol, .modal-content ul { padding-left: var(--spacing-lg); }
         .modal-content code { background: var(--background); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
         .close-btn { color: #aaa; position: absolute; top: var(--spacing-md); right: var(--spacing-lg); font-size: 28px; font-weight: bold; }
@@ -331,7 +336,6 @@
                 <h3>Image Evaluation</h3>
                 <span class="item-counter">{{ item_id + 1 }} / {{ total_items }}</span>
             </div>
-            <!-- MODIFICATION: Instructions button is now here, positioned by CSS -->
             <button id="openInstructionsBtn" class="instructions-btn-corner">?</button>
             <div class="eval-id">
                 ID: <strong>{{ item.eval_id }}</strong>
@@ -349,7 +353,6 @@
                 <input type="hidden" name="next_item_id" value="{{ next_id }}">
             {% endif %}
 
-            <!-- Form sections remain unchanged -->
             <div class="form-section">
                 <h4>1. Comparative Rating (Test vs. Comparison)</h4>
                 <div class="radio-group">
@@ -419,7 +422,7 @@
         <span class="close-btn">&times;</span>
         <h3>Evaluator Instructions</h3>
         <h4>Objective</h4>
-        <p>Your expertise is needed to evaluate computer-generated images. Your goal is to determine which of two images (a <strong>"Test"</strong> image and a <strong>"Comparison"</strong> image) is a more faithful and useful representation. Please base your evaluation on key details, texture accuracy, realism, and overall quality.</p>
+        <p>Your expertise is needed to evaluate computer-generated images. Your goal is to determine which of two images—a <strong>"Test"</strong> image and a <strong>"Comparison"</strong> image—is a more faithful and useful representation. Please base your evaluation on key details, texture accuracy, realism, and overall quality.</p>
         <h4>How to Evaluate</h4>
         <ol>
             <li><strong>Examine the Image:</strong> The main viewer displays the "Test" and "Comparison" images, usually side-by-side.</li>
