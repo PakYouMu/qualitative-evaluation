@@ -456,6 +456,10 @@
 
         <form action="/submit" method="post">
             <input type="hidden" name="current_item_id" value="{{ item_id }}">
+            
+            <!-- MODIFICATION: Added hidden input for the anonymous session ID -->
+            <input type="hidden" name="session_id" id="sessionIdInput">
+
             <input type="hidden" name="eval_id" value="{{ item.eval_id }}">
             <input type="hidden" name="item_class" value="{{ item.class }}">
             <input type="hidden" name="item_metric" value="{{ item.metric }}">
@@ -601,13 +605,40 @@
 })();
 
 
-// --- SCRIPT 2 & 3: PAN & ZOOM and RANDOM THEMING ---
+// --- SCRIPT 2, 3 & 4: SESSION ID, PAN & ZOOM, and THEMING ---
 // These scripts wait for the page's DOM to be fully loaded before running.
 document.addEventListener('DOMContentLoaded', function() {
     
     // --- Define Shared Elements ---
-    // We define variables for elements used by multiple scripts here to avoid conflicts.
     const viewer = document.getElementById('imageViewer');
+    
+    // --- MODIFICATION: Anonymous Session ID Management Script ---
+    (function() {
+        const sessionKey = 'anonymousEvalSessionId';
+        let sessionId = sessionStorage.getItem(sessionKey);
+
+        // Function to generate a simple UUID (Universally Unique Identifier)
+        function generateUUID() {
+            // This creates a UUID based on the browser's crypto API for randomness.
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+
+        // If no session ID exists in sessionStorage, create one.
+        // sessionStorage persists only for the duration of the page session (i.e., while the tab is open).
+        if (!sessionId) {
+            sessionId = generateUUID();
+            sessionStorage.setItem(sessionKey, sessionId);
+            console.log(`New anonymous session started: ${sessionId}`);
+        }
+
+        // Find the hidden input field and set its value to the session ID.
+        const sessionIdInput = document.getElementById('sessionIdInput');
+        if (sessionIdInput) {
+            sessionIdInput.value = sessionId;
+        }
+    })();
     
     // --- Pan & Zoom Functionality ---
     (function() {
