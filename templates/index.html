@@ -295,12 +295,7 @@
         .modal-content h3 { margin-bottom: var(--spacing-md); font-size: 1.75rem; }
         .modal-content h4 { margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm); font-size: 1.1rem; }
         .modal-content p, .modal-content ol, .modal-content ul { margin-bottom: var(--spacing-md); }
-        
-        /* MODIFICATION: Justified text for paragraphs inside the modal */
-        .modal-content p {
-            text-align: justify;
-        }
-
+        .modal-content p { text-align: justify; }
         .modal-content ol, .modal-content ul { padding-left: var(--spacing-lg); }
         .modal-content code { background: var(--background); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
         .close-btn { color: #aaa; position: absolute; top: var(--spacing-md); right: var(--spacing-lg); font-size: 28px; font-weight: bold; }
@@ -479,7 +474,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById("instructionsModal");
         const btn = document.getElementById("openInstructionsBtn");
         const span = document.getElementsByClassName("close-btn")[0];
+        const visitedKey = 'evaluatorHasVisited'; // Key for localStorage
         if (!modal || !btn || !span) return;
+
+        // Check if the user is visiting for the first time
+        const hasVisited = localStorage.getItem(visitedKey);
+        if (!hasVisited) {
+            modal.style.display = "block"; // Open the modal automatically
+            localStorage.setItem(visitedKey, 'true'); // Set the flag so it doesn't open again
+        }
+
         btn.onclick = function() { modal.style.display = "block"; }
         span.onclick = function() { modal.style.display = "none"; }
         window.onclick = function(event) { if (event.target == modal) { modal.style.display = "none"; } }
