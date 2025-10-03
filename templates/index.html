@@ -56,7 +56,8 @@
 
         /* --- Left Column: Image Viewer --- */
         .image-viewer {
-            flex: 75%;
+            /* IMPROVEMENT: Use flex-grow to take up remaining space */
+            flex: 3;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -65,6 +66,8 @@
             overflow: hidden;
             cursor: crosshair;
             padding: var(--spacing-lg);
+            /* IMPROVEMENT: Add a minimum width to prevent it from becoming too small */
+            min-width: 300px;
         }
 
         .image-container {
@@ -141,12 +144,16 @@
 
         /* --- Right Column: Form --- */
         .form-container {
-            flex: 25%;
+            /* IMPROVEMENT: Use flex basis for a default width, but allow it to grow and shrink. */
+            flex: 1 1 420px;
+            max-width: 450px; /* Set a max-width to keep it from getting too wide on large screens */
+            min-width: 320px; /* Ensure it doesn't get too crushed */
             padding: var(--spacing-xl);
             background: var(--surface);
             overflow-y: auto;
             box-shadow: -5px 0 25px rgba(0, 0, 0, 0.07);
         }
+
 
         /* Custom Scrollbar */
         .form-container::-webkit-scrollbar {
@@ -201,6 +208,9 @@
         .eval-id strong {
             color: var(--brand-primary-dark);
             transition: var(--transition-fast);
+            /* IMPROVEMENT: Allow long words to break and wrap to the next line */
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         /* --- Form Sections --- */
@@ -256,6 +266,8 @@
             margin-right: var(--spacing-md);
             position: relative;
             transition: var(--transition-fast);
+            /* IMPROVEMENT: prevent radio button from shrinking */
+            flex-shrink: 0;
         }
 
         .radio-label input[type="radio"]:checked {
@@ -297,12 +309,16 @@
         .rating-options {
             display: flex;
             gap: var(--spacing-sm);
+             /* IMPROVEMENT: Allow rating buttons to wrap on small screens */
+            flex-wrap: wrap;
         }
         .rating-options .radio-label {
             flex: 1;
             justify-content: center;
             padding: var(--spacing-sm);
             font-weight: 600;
+            /* IMPROVEMENT: Ensure a minimum width so they don't get too squashed before wrapping */
+            min-width: 40px;
         }
 
         /* --- Textarea --- */
@@ -391,13 +407,23 @@
         }
 
         /* --- Responsive Design --- */
-        @media (max-width: 768px) {
+        /* IMPROVEMENT: Use a wider breakpoint for a better transition */
+        @media (max-width: 992px) {
             .page-wrapper {
                 flex-direction: column;
+                /* Allow scrolling on the main page for smaller viewports */
+                overflow: auto;
             }
-            .image-viewer,
+            .image-viewer {
+                /* Set a reasonable height for the image in the column layout */
+                min-height: 40vh;
+            }
             .form-container {
-                flex: 1;
+                /* Allow the form to take full width and remove max-width constraint */
+                flex-basis: auto;
+                max-width: none;
+                /* Reduce padding on smaller screens */
+                padding: var(--spacing-lg);
             }
         }
     </style>
