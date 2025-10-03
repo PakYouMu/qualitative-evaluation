@@ -407,12 +407,14 @@
         }
 
         /* --- Responsive Design --- */
-        /* IMPROVEMENT: Use a wider breakpoint for a better transition */
         @media (max-width: 992px) {
+            body {
+                overflow: auto; /* Allow the main body to scroll again */
+            }
             .page-wrapper {
                 flex-direction: column;
-                /* Allow scrolling on the main page for smaller viewports */
-                overflow: auto;
+                height: auto; /* Let the wrapper grow as tall as its content */
+                overflow: visible; /* Remove the wrapper's own overflow control */
             }
             .image-viewer {
                 /* Set a reasonable height for the image in the column layout */
