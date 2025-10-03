@@ -14,10 +14,10 @@
             --danger-color: #f5365c;
 
             /* Neutral Palette */
-            --background: #f8f9fe; /* Slightly cooler background */
+            --background: #f8f9fe;
             --surface: #ffffff;
-            --border-color: #dee2e6; /* Softer border color */
-            --text-primary: #212529; /* Higher contrast text */
+            --border-color: #dee2e6;
+            --text-primary: #212529;
             --text-secondary: #6c757d;
 
             /* Spacing & Sizing (8-Point Grid System) */
@@ -169,6 +169,8 @@
         /* --- Header --- */
         .header {
             margin-bottom: var(--spacing-xl);
+            /* MODIFICATION: Added position relative to anchor the new button */
+            position: relative;
         }
 
         .header-top {
@@ -176,14 +178,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: var(--spacing-md);
-            gap: var(--spacing-sm); /* Add gap for spacing */
         }
 
         .header h3 {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-primary);
-            flex-shrink: 0; /* Prevent title from shrinking */
         }
 
         .item-counter {
@@ -194,7 +194,6 @@
             font-size: 0.875rem;
             font-weight: 600;
             transition: var(--transition-fast);
-            margin-left: auto; /* Push counter to the right */
         }
 
         .eval-id {
@@ -233,260 +232,81 @@
         }
 
         /* --- Radio Buttons --- */
-        .radio-group {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-sm);
-        }
-
-        .radio-label {
-            display: flex;
-            align-items: center;
-            padding: var(--spacing-md);
-            background: var(--surface);
-            border: 2px solid var(--border-color);
-            border-radius: var(--spacing-sm);
-            cursor: pointer;
-            transition: var(--transition-fast);
-        }
-
-        .radio-label:hover {
-            border-color: var(--random-accent-color, var(--brand-primary-light));
-            background: color-mix(in srgb, var(--random-accent-color, var(--brand-primary-light)) 10%, transparent);
-        }
-
-        .radio-label input[type="radio"] {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 50%;
-            margin-right: var(--spacing-md);
-            position: relative;
-            transition: var(--transition-fast);
-            flex-shrink: 0;
-        }
-
-        .radio-label input[type="radio"]:checked {
-            border-color: var(--random-accent-color, var(--brand-primary-dark));
-            background-color: var(--random-accent-color, var(--brand-primary-dark));
-        }
-        .radio-label input[type="radio"]:checked::after {
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: white;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .radio-label:has(input:checked) {
-            border-color: var(--random-accent-color, var(--brand-primary-dark));
-            background: color-mix(in srgb, var(--random-accent-color, var(--brand-primary-dark)) 10%, transparent);
-        }
+        .radio-group { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+        .radio-label { display: flex; align-items: center; padding: var(--spacing-md); background: var(--surface); border: 2px solid var(--border-color); border-radius: var(--spacing-sm); cursor: pointer; transition: var(--transition-fast); }
+        .radio-label:hover { border-color: var(--random-accent-color, var(--brand-primary-light)); background: color-mix(in srgb, var(--random-accent-color, var(--brand-primary-light)) 10%, transparent); }
+        .radio-label input[type="radio"] { appearance: none; width: 20px; height: 20px; border: 2px solid var(--border-color); border-radius: 50%; margin-right: var(--spacing-md); position: relative; transition: var(--transition-fast); flex-shrink: 0; }
+        .radio-label input[type="radio"]:checked { border-color: var(--random-accent-color, var(--brand-primary-dark)); background-color: var(--random-accent-color, var(--brand-primary-dark)); }
+        .radio-label input[type="radio"]:checked::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .radio-label:has(input:checked) { border-color: var(--random-accent-color, var(--brand-primary-dark)); background: color-mix(in srgb, var(--random-accent-color, var(--brand-primary-dark)) 10%, transparent); }
 
         /* --- Rating Stars --- */
-        .rating-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .rating-group b {
-            display: block;
-            margin-bottom: var(--spacing-sm);
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .rating-options {
-            display: flex;
-            gap: var(--spacing-sm);
-            flex-wrap: wrap;
-        }
-        .rating-options .radio-label {
-            flex: 1;
-            justify-content: center;
-            padding: var(--spacing-sm);
-            font-weight: 600;
-            min-width: 40px;
-        }
+        .rating-group { margin-bottom: 1.5rem; }
+        .rating-group b { display: block; margin-bottom: var(--spacing-sm); color: var(--text-secondary); font-weight: 600; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .rating-options { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+        .rating-options .radio-label { flex: 1; justify-content: center; padding: var(--spacing-sm); font-weight: 600; min-width: 40px; }
 
         /* --- Textarea --- */
-        textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: var(--spacing-md);
-            font-size: 14px;
-            font-family: inherit;
-            border: 2px solid var(--border-color);
-            border-radius: var(--spacing-sm);
-            resize: vertical;
-            transition: var(--transition-fast);
-            background: var(--surface);
-        }
-        textarea:focus {
-            outline: none;
-            border-color: var(--brand-primary-dark);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary-dark) 15%, transparent);
-        }
+        textarea { width: 100%; min-height: 120px; padding: var(--spacing-md); font-size: 14px; font-family: inherit; border: 2px solid var(--border-color); border-radius: var(--spacing-sm); resize: vertical; transition: var(--transition-fast); background: var(--surface); }
+        textarea:focus { outline: none; border-color: var(--brand-primary-dark); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary-dark) 15%, transparent); }
 
         /* --- Navigation Buttons --- */
-        .nav {
-            margin-top: var(--spacing-xl);
-            display: flex;
-            gap: var(--spacing-md);
-        }
-
-        .nav button,
-        .nav a {
-            flex: 1;
-            padding: 14px var(--spacing-lg);
-            border: none;
-            border-radius: var(--spacing-sm);
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition-fast);
-        }
-
-        .nav button {
-            background: var(--success-color);
-            color: white;
-            box-shadow: var(--shadow-sm);
-        }
-        .nav button:hover {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .nav a {
-            background: var(--surface);
-            color: var(--text-primary);
-            border: 2px solid var(--border-color);
-        }
-        .nav a:hover:not(.disabled) {
-            border-color: var(--text-secondary);
-            color: var(--text-primary);
-        }
-        .nav a.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background-color: var(--background);
-        }
+        .nav { margin-top: var(--spacing-xl); display: flex; gap: var(--spacing-md); }
+        .nav button, .nav a { flex: 1; padding: 14px var(--spacing-lg); border: none; border-radius: var(--spacing-sm); font-size: 16px; font-weight: 600; text-decoration: none; text-align: center; cursor: pointer; transition: var(--transition-fast); }
+        .nav button { background: var(--success-color); color: white; box-shadow: var(--shadow-sm); }
+        .nav button:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .nav a { background: var(--surface); color: var(--text-primary); border: 2px solid var(--border-color); }
+        .nav a:hover:not(.disabled) { border-color: var(--text-secondary); color: var(--text-primary); }
+        .nav a.disabled { opacity: 0.5; cursor: not-allowed; background-color: var(--background); }
 
         /* --- Footer --- */
-        .footer {
-            margin-top: var(--spacing-xl);
-            padding-top: var(--spacing-lg);
-            border-top: 1px solid var(--border-color);
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
+        .footer { margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px solid var(--border-color); text-align: center; color: var(--text-secondary); font-size: 0.875rem; }
+        .footer a { color: var(--brand-primary-dark); text-decoration: none; font-weight: 600; }
+        .footer a:hover { text-decoration: underline; }
 
-        .footer a {
-            color: var(--brand-primary-dark);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* --- Styles for Instructions Button & Modal --- */
-        .header-btn {
-            padding: var(--spacing-xs) var(--spacing-md);
-            font-size: 0.875rem;
-            font-weight: 600;
-            background-color: var(--background);
+        /* --- MODIFICATION: New styles for corner Instructions Button & Modal --- */
+        .instructions-btn-corner {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             border: 1px solid var(--border-color);
-            border-radius: 20px;
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: bold;
+            font-family: serif; /* Gives a nice ? look */
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: var(--transition-fast);
-            white-space: nowrap; /* Prevent button text from wrapping */
         }
-        .header-btn:hover {
-            background-color: var(--brand-primary-dark);
+        .instructions-btn-corner:hover {
+            background: var(--brand-primary-dark);
             color: white;
             border-color: var(--brand-primary-dark);
+            transform: scale(1.1);
+            box-shadow: var(--shadow-sm);
         }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background-color: var(--surface);
-            color: var(--text-primary);
-            margin: 10vh auto;
-            padding: var(--spacing-xl);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            width: 90%;
-            max-width: 680px;
-            position: relative;
-            box-shadow: var(--shadow-lg);
-            line-height: 1.7;
-        }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
+        .modal-content { background-color: var(--surface); color: var(--text-primary); margin: 10vh auto; padding: var(--spacing-xl); border: 1px solid var(--border-color); border-radius: 12px; width: 90%; max-width: 680px; position: relative; box-shadow: var(--shadow-lg); line-height: 1.7; }
         .modal-content h3 { margin-bottom: var(--spacing-md); font-size: 1.75rem; }
         .modal-content h4 { margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm); font-size: 1.1rem; }
         .modal-content p, .modal-content ol, .modal-content ul { margin-bottom: var(--spacing-md); }
         .modal-content ol, .modal-content ul { padding-left: var(--spacing-lg); }
-        .modal-content code {
-            background: var(--background);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-        .close-btn {
-            color: #aaa;
-            position: absolute;
-            top: var(--spacing-md);
-            right: var(--spacing-lg);
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close-btn:hover,
-        .close-btn:focus {
-            color: var(--text-primary);
-            text-decoration: none;
-            cursor: pointer;
-        }
+        .modal-content code { background: var(--background); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .close-btn { color: #aaa; position: absolute; top: var(--spacing-md); right: var(--spacing-lg); font-size: 28px; font-weight: bold; }
+        .close-btn:hover, .close-btn:focus { color: var(--text-primary); text-decoration: none; cursor: pointer; }
 
         /* --- Responsive Design for Mobile --- */
         @media (max-width: 992px) {
-            body {
-                overflow: auto;
-            }
-            .page-wrapper {
-                flex-direction: column;
-                height: auto;
-                overflow: visible;
-            }
-            .image-viewer {
-                min-height: 40vh;
-            }
-            .form-container {
-                flex-basis: auto;
-                max-width: none;
-                padding: var(--spacing-lg);
-                overflow-y: visible;
-            }
+            body { overflow: auto; }
+            .page-wrapper { flex-direction: column; height: auto; overflow: visible; }
+            .image-viewer { min-height: 40vh; }
+            .form-container { flex-basis: auto; max-width: none; padding: var(--spacing-lg); overflow-y: visible; }
         }
     </style>
 </head>
@@ -509,9 +329,10 @@
         <div class="header">
             <div class="header-top">
                 <h3>Image Evaluation</h3>
-                <button id="openInstructionsBtn" class="header-btn">Instructions</button>
                 <span class="item-counter">{{ item_id + 1 }} / {{ total_items }}</span>
             </div>
+            <!-- MODIFICATION: Instructions button is now here, positioned by CSS -->
+            <button id="openInstructionsBtn" class="instructions-btn-corner">?</button>
             <div class="eval-id">
                 ID: <strong>{{ item.eval_id }}</strong>
             </div>
@@ -528,29 +349,15 @@
                 <input type="hidden" name="next_item_id" value="{{ next_id }}">
             {% endif %}
 
+            <!-- Form sections remain unchanged -->
             <div class="form-section">
                 <h4>1. Comparative Rating (Test vs. Comparison)</h4>
                 <div class="radio-group">
-                    <label class="radio-label">
-                        <input type="radio" name="comparative_rating" value="test_much_better" required>
-                        Test is much better
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="comparative_rating" value="test_slightly_better">
-                        Test is slightly better
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="comparative_rating" value="equal">
-                        They are equal
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="comparative_rating" value="comparison_slightly_better">
-                        Comparison is slightly better
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="comparative_rating" value="comparison_much_better">
-                        Comparison is much better
-                    </label>
+                    <label class="radio-label"><input type="radio" name="comparative_rating" value="test_much_better" required>Test is much better</label>
+                    <label class="radio-label"><input type="radio" name="comparative_rating" value="test_slightly_better">Test is slightly better</label>
+                    <label class="radio-label"><input type="radio" name="comparative_rating" value="equal">They are equal</label>
+                    <label class="radio-label"><input type="radio" name="comparative_rating" value="comparison_slightly_better">Comparison is slightly better</label>
+                    <label class="radio-label"><input type="radio" name="comparative_rating" value="comparison_much_better">Comparison is much better</label>
                 </div>
             </div>
 
@@ -611,10 +418,8 @@
     <div class="modal-content">
         <span class="close-btn">&times;</span>
         <h3>Evaluator Instructions</h3>
-        
         <h4>Objective</h4>
         <p>Your expertise is needed to evaluate computer-generated images. Your goal is to determine which of two images—a <strong>"Test"</strong> image and a <strong>"Comparison"</strong> image—is a more faithful and useful representation. Please base your evaluation on key details, texture accuracy, realism, and overall quality.</p>
-
         <h4>How to Evaluate</h4>
         <ol>
             <li><strong>Examine the Image:</strong> The main viewer displays the "Test" and "Comparison" images, usually side-by-side.</li>
@@ -639,12 +444,7 @@
     const progressKey = 'qualEval_lastCompletedId';
     const currentItemId = {{ item_id }};
     const previousItemId = {{ previous_id if previous_id is not none else 'null' }};
-
-    if (previousItemId !== null) {
-        localStorage.setItem(progressKey, previousItemId);
-    }
-
-    // This check prevents the redirect loop when a user navigates backwards.
+    if (previousItemId !== null) { localStorage.setItem(progressKey, previousItemId); }
     const isNavigatingWithinApp = document.referrer.includes('/evaluate/');
     if (currentItemId === 0 && !isNavigatingWithinApp) {
         const savedProgress = localStorage.getItem(progressKey);
@@ -659,124 +459,70 @@
     }
 })();
 
-
 // --- SCRIPTS THAT RUN AFTER THE PAGE LOADS ---
 document.addEventListener('DOMContentLoaded', function() {
-    
     const viewer = document.getElementById('imageViewer');
-    
     // --- Anonymous Session ID Management ---
     (function() {
         const sessionKey = 'anonymousEvalSessionId';
         let sessionId = sessionStorage.getItem(sessionKey);
-
-        function generateUUID() {
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
-        }
-
-        if (!sessionId) {
-            sessionId = generateUUID();
-            sessionStorage.setItem(sessionKey, sessionId);
-        }
-
+        function generateUUID() { return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)); }
+        if (!sessionId) { sessionId = generateUUID(); sessionStorage.setItem(sessionKey, sessionId); }
         const sessionIdInput = document.getElementById('sessionIdInput');
-        if (sessionIdInput) {
-            sessionIdInput.value = sessionId;
-        }
+        if (sessionIdInput) { sessionIdInput.value = sessionId; }
     })();
-
     // --- Instructions Modal Functionality ---
     (function() {
         const modal = document.getElementById("instructionsModal");
         const btn = document.getElementById("openInstructionsBtn");
         const span = document.getElementsByClassName("close-btn")[0];
-
         if (!modal || !btn || !span) return;
-
         btn.onclick = function() { modal.style.display = "block"; }
         span.onclick = function() { modal.style.display = "none"; }
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
+        window.onclick = function(event) { if (event.target == modal) { modal.style.display = "none"; } }
     })();
-    
     // --- Pan & Zoom Functionality ---
     (function() {
         if (!viewer) return;
         const container = document.getElementById('imageContainer');
         const image = document.getElementById('evaluationImage');
         const zoomLevelDisplay = document.getElementById('zoomLevel');
-        
-        let scale = 1, translateX = 0, translateY = 0, isPanning = false;
-        let startX = 0, startY = 0, lastX = 0, lastY = 0;
-        
+        let scale = 1, translateX = 0, translateY = 0, isPanning = false, startX = 0, startY = 0, lastX = 0, lastY = 0;
         const MIN_SCALE = 0.5, MAX_SCALE = 10, ZOOM_SPEED = 0.1;
-        
         const updateTransform = () => {
             if (container) container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
             if (zoomLevelDisplay) zoomLevelDisplay.textContent = `${Math.round(scale * 100)}%`;
         };
-        
         const centerImage = () => { translateX = 0; translateY = 0; updateTransform(); };
-
-        if (image) {
-            if (image.complete) { centerImage(); } else { image.onload = () => centerImage(); }
-        }
-        
+        if (image) { if (image.complete) { centerImage(); } else { image.onload = () => centerImage(); } }
         viewer.addEventListener('wheel', e => {
             e.preventDefault();
             const rect = viewer.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left - (rect.width / 2);
-            const mouseY = e.clientY - rect.top - (rect.height / 2);
-            const delta = e.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED;
-            const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (1 + delta)));
-            
+            const mouseX = e.clientX - rect.left - rect.width / 2, mouseY = e.clientY - rect.top - rect.height / 2;
+            const delta = e.deltaY > 0 ? -ZOOM_SPEED : ZOOM_SPEED, newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (1 + delta)));
             if (newScale !== scale) {
-                const pointX = (mouseX - translateX) / scale;
-                const pointY = (mouseY - translateY) / scale;
+                const pointX = (mouseX - translateX) / scale, pointY = (mouseY - translateY) / scale;
                 scale = newScale;
                 translateX = mouseX - pointX * scale;
                 translateY = mouseY - pointY * scale;
                 updateTransform();
             }
         });
-        
         viewer.addEventListener('mousedown', e => {
             if (e.button !== 0) return;
             isPanning = true;
             viewer.classList.add('grabbing');
-            startX = e.clientX;
-            startY = e.clientY;
-            lastX = translateX;
-            lastY = translateY;
+            startX = e.clientX; startY = e.clientY; lastX = translateX; lastY = translateY;
             e.preventDefault();
         });
-        
         document.addEventListener('mousemove', e => {
-            if (isPanning) {
-                translateX = lastX + (e.clientX - startX);
-                translateY = lastY + (e.clientY - startY);
-                updateTransform();
-            }
+            if (isPanning) { translateX = lastX + (e.clientX - startX); translateY = lastY + (e.clientY - startY); updateTransform(); }
         });
-        
-        document.addEventListener('mouseup', () => {
-            if (isPanning) {
-                isPanning = false;
-                viewer.classList.remove('grabbing');
-            }
-        });
-        
+        document.addEventListener('mouseup', () => { if (isPanning) { isPanning = false; viewer.classList.remove('grabbing'); } });
         viewer.addEventListener('dblclick', () => { scale = 1; centerImage(); });
-        
         window.zoomIn = () => { scale = Math.min(MAX_SCALE, scale * 1.2); updateTransform(); };
         window.zoomOut = () => { scale = Math.max(MIN_SCALE, scale / 1.2); updateTransform(); };
         window.resetZoom = () => { scale = 1; centerImage(); };
-        
         document.addEventListener('keydown', e => {
             if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
                 const keyMap = { '+': zoomIn, '=': zoomIn, '-': zoomOut, '_': zoomOut, '0': resetZoom };
@@ -784,48 +530,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     })();
-
     // --- Random Gradient & Theming ---
     (function() {
-        const rootStyles = getComputedStyle(document.documentElement);
-        const sharedColor1 = rootStyles.getPropertyValue('--brand-primary-dark').trim();
-        const sharedColor2 = rootStyles.getPropertyValue('--brand-primary-light').trim();
-
+        const rootStyles = getComputedStyle(document.documentElement), sharedColor1 = rootStyles.getPropertyValue('--brand-primary-dark').trim(), sharedColor2 = rootStyles.getPropertyValue('--brand-primary-light').trim();
         if (viewer) {
-            const randomStartAngle = Math.floor(Math.random() * 360);
-            const numStops = Math.floor(Math.random() * (10 - 4 + 1)) + 4;
-            const angleStep = 360 / numStops;
-            let stops = Array.from({ length: numStops }, (_, i) => 
-                `${i % 2 === 0 ? sharedColor1 : sharedColor2} ${i * angleStep}deg`
-            );
+            const randomStartAngle = Math.floor(Math.random() * 360), numStops = Math.floor(Math.random() * 7) + 4, angleStep = 360 / numStops;
+            let stops = Array.from({ length: numStops }, (_, i) => `${i % 2 === 0 ? sharedColor1 : sharedColor2} ${i * angleStep}deg`);
             stops.push(`${sharedColor1} 360deg`);
             viewer.style.background = `conic-gradient(from ${randomStartAngle}deg at 50% 50%, ${stops.join(', ')})`;
         }
-
         const counter = document.querySelector('.item-counter');
-        if (counter) {
-            const randomAngle = Math.floor(Math.random() * 360);
-            counter.style.background = `linear-gradient(${randomAngle}deg, ${sharedColor1}, ${sharedColor2})`;
-        }
-
-        const formSections = document.querySelectorAll('.form-section');
-        formSections.forEach(section => {
+        if (counter) { const randomAngle = Math.floor(Math.random() * 360); counter.style.background = `linear-gradient(${randomAngle}deg, ${sharedColor1}, ${sharedColor2})`; }
+        document.querySelectorAll('.form-section').forEach(section => {
             if (section.querySelector('.radio-group') || section.querySelector('.rating-options')) {
-                let randomHue;
-                do { randomHue = Math.floor(Math.random() * 360); } while (randomHue > 60 && randomHue < 120);
-                const randomAccentColor = `oklch(0.6 0.2 ${randomHue})`;
-                section.style.setProperty('--random-accent-color', randomAccentColor);
+                let randomHue; do { randomHue = Math.floor(Math.random() * 360); } while (randomHue > 60 && randomHue < 120);
+                section.style.setProperty('--random-accent-color', `oklch(0.6 0.2 ${randomHue})`);
             }
         });
-
         const evalIdStrong = document.querySelector('.eval-id strong');
         if (evalIdStrong) {
-            const randomAngle = Math.floor(Math.random() * 360);
-            const gradient = `linear-gradient(${randomAngle}deg, ${sharedColor1}, ${sharedColor2})`;
-            evalIdStrong.style.background = gradient;
-            evalIdStrong.style.webkitBackgroundClip = 'text';
-            evalIdStrong.style.backgroundClip = 'text';
-            evalIdStrong.style.color = 'transparent';
+            const randomAngle = Math.floor(Math.random() * 360), gradient = `linear-gradient(${randomAngle}deg, ${sharedColor1}, ${sharedColor2})`;
+            evalIdStrong.style.background = gradient; evalIdStrong.style.webkitBackgroundClip = 'text'; evalIdStrong.style.backgroundClip = 'text'; evalIdStrong.style.color = 'transparent';
         }
     })();
 });
