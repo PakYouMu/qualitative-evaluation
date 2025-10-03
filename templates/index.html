@@ -578,20 +578,23 @@
 
 <script>
 // --- SCRIPT 1: CLIENT-SIDE PROGRESS SAVING & RESUMING ---
-// This script runs immediately to check for redirects.
 (function() {
     const progressKey = 'qualEval_lastCompletedId';
     const currentItemId = {{ item_id }};
     const previousItemId = {{ previous_id if previous_id is not none else 'null' }};
 
-    // Part 1: Save progress from the previous step
+    // Part 1: Save progress from the previous step (No changes here)
     if (previousItemId !== null) {
         localStorage.setItem(progressKey, previousItemId);
         console.log(`Progress saved. Last completed ID: ${previousItemId}`);
     }
 
     // Part 2: Resume session if visiting the first page
-    if (currentItemId === 0) {
+    // MODIFICATION: Added a check for document.referrer
+    // This ensures the redirect only happens on a fresh session, not when using the "Previous" button.
+    const isNavigatingWithinApp = document.referrer.includes('/evaluate/');
+    
+    if (currentItemId === 0 && !isNavigatingWithinApp) {
         const savedProgress = localStorage.getItem(progressKey);
         if (savedProgress !== null) {
             const lastCompletedId = parseInt(savedProgress, 10);
@@ -603,7 +606,6 @@
         }
     }
 })();
-
 
 // --- SCRIPT 2, 3 & 4: SESSION ID, PAN & ZOOM, and THEMING ---
 // These scripts wait for the page's DOM to be fully loaded before running.
