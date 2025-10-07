@@ -395,7 +395,7 @@
 
             <div class="nav">
                 {% if previous_id is not none %}
-                    <a href="{{ url_for('evaluate_item', item_id=previous_id) }}">← Previous</a>
+                    <a href="/evaluate/{{ previous_id }}">← Previous</a>
                 {% else %}
                     <a class="disabled">← Previous</a>
                 {% endif %}

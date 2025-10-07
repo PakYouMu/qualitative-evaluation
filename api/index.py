@@ -1,3 +1,5 @@
+# /api/index.py
+
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import os
 from supabase import create_client, Client
@@ -5,8 +7,7 @@ from urllib.parse import quote
 import traceback
 
 # --- App Initialization ---
-# When using this single-file structure, Flask needs to know where to find the templates/static folders.
-# The paths are relative to this 'api' directory.
+# The app object must be named 'app' for Vercel's WSGI runner to find it.
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # --- Supabase Initialization ---
@@ -21,10 +22,10 @@ if SUPABASE_URL and SUPABASE_KEY:
     except Exception as e:
         print(f"--- FATAL: Error initializing Supabase client: {e} ---")
 else:
-    print("--- FATAL: Supabase environment variables not found. ---")
+    print("--- FATAL: Supabase environment variables not found at runtime. ---")
 
 
-# --- Image Data Loading ---
+# --- Image Data Loading (Unchanged) ---
 STATIC_IMAGE_FOLDER = 'static/evaluation_images'
 CLASS_ABBREVIATIONS = {
     'Copra Cake': 'CC', 'Cracked Corn': 'CORN', 'Feed Wheats': 'FW',
@@ -38,7 +39,6 @@ def load_evaluation_items():
     IMAGE_REPO_NAME = "qualitative-evaluation-images"
     BRANCH_NAME = "main"
     
-    # Path is relative to the project root, so we go up one level from 'api'
     project_root = os.path.dirname(os.path.dirname(__file__))
     image_folder_path = os.path.join(project_root, STATIC_IMAGE_FOLDER)
     
@@ -51,71 +51,62 @@ def load_evaluation_items():
                     class_part, metric_part, case_part = base_name.split('__')
                     class_name = class_part.replace('_', ' ')
                     safe_filename = quote(filename)
-                    public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/{BRANCH_NAME}/{STATIC_IMAGE_FOLDER}/{safe_filename}"
+                    public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/refs/heads/{BRANCH_NAME}/{STATIC_IMAGE_FOLDER}/{safe_filename}"
                     image_data.append({"metric": metric_part, "class": class_name, "case": case_part, "web_path": public_url})
                 except Exception as e:
                     print(f"Warning: Could not parse filename '{filename}'. Skipping. Error: {e}")
     else:
-        print(f"CRITICAL WARNING: Local image directory not found at '{image_folder_path}'. URL generation may be incomplete.")
+        print(f"CRITICAL WARNING: Local image directory not found at '{image_folder_path}'.")
 
     for i, item in enumerate(image_data):
         class_abbr = CLASS_ABBREVIATIONS.get(item['class'], 'UNK')
         item['eval_id'] = f"{class_abbr}-{item['metric'].upper()}-{item['case']}"
         item['id'] = i
-
     print(f" -> Successfully built {len(image_data)} image URLs.")
     return image_data
 
 EVALUATION_ITEMS = load_evaluation_items()
 TOTAL_ITEMS = len(EVALUATION_ITEMS)
 
-# --- Route Definitions ---
 
-# This will now handle all routes, including API calls
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def catch_all(path):
-    # This is a simple router inside Flask
-    
-    # --- API Routes ---
-    if path == "api/get_new_user_id":
-        if not supabase:
-            return jsonify({'error': 'Supabase client not initialized'}), 500
-        try:
-            response = supabase.rpc('get_next_user_id', {}).execute()
-            if response.data:
-                return jsonify({'user_id': response.data})
-            else:
-                raise Exception(getattr(response, 'error', 'Unknown RPC error'))
-        except Exception as e:
-            print(f"Error calling Supabase RPC: {e}")
-            return jsonify({'error': 'Could not generate user ID'}), 500
+# --- ROUTE DEFINITIONS ---
 
-    # --- Page Routes ---
-    elif path == "" or path == "evaluate/0":
-        item_id = 0
-        if not 0 <= item_id < TOTAL_ITEMS: return "No items found", 404
-        item = EVALUATION_ITEMS[item_id]
-        next_id = item_id + 1 if (item_id + 1) < TOTAL_ITEMS else None
-        return render_template('index.html', item=item, item_id=item_id, total_items=TOTAL_ITEMS, previous_id=None, next_id=next_id)
+# This handles the home page (e.g., yourdomain.com/)
+@app.route('/')
+def home():
+    return redirect(url_for('evaluate_item', item_id=0))
 
-    elif path.startswith('evaluate/'):
-        try:
-            item_id = int(path.split('/')[-1])
-            if not 0 <= item_id < TOTAL_ITEMS: return redirect(url_for('catch_all', path=''))
-            item = EVALUATION_ITEMS[item_id]
-            previous_id = item_id - 1 if item_id > 0 else None
-            next_id = item_id + 1 if item_id < TOTAL_ITEMS - 1 else None
-            return render_template('index.html', item=item, item_id=item_id, total_items=TOTAL_ITEMS, previous_id=previous_id, next_id=next_id)
-        except (ValueError, IndexError):
-            return "Invalid item ID.", 404
-            
-    elif path == "complete":
-        return render_template('complete.html')
-        
-    # If no route matches, return a 404
-    return "Not Found", 404
+# This handles specific evaluation pages (e.g., yourdomain.com/evaluate/5)
+@app.route('/evaluate/<int:item_id>')
+def evaluate_item(item_id):
+    if not 0 <= item_id < TOTAL_ITEMS:
+        return redirect(url_for('home'))
+    item = EVALUATION_ITEMS[item_id]
+    previous_id = item_id - 1 if item_id > 0 else None
+    next_id = item_id + 1 if item_id < TOTAL_ITEMS - 1 else None
+    return render_template('index.html', item=item, item_id=item_id, total_items=TOTAL_ITEMS, previous_id=previous_id, next_id=next_id)
 
+# This handles the completion page
+@app.route('/complete')
+def complete():
+    return render_template('complete.html')
+
+# This handles the API call for getting a new user ID
+@app.route('/api/get_new_user_id', methods=['GET'])
+def get_new_user_id():
+    if not supabase:
+        return jsonify({'error': 'Supabase client not initialized'}), 500
+    try:
+        response = supabase.rpc('get_next_user_id', {}).execute()
+        if response.data:
+            return jsonify({'user_id': response.data})
+        else:
+            raise Exception(getattr(response, 'error', 'Unknown RPC error'))
+    except Exception as e:
+        print(f"Error calling Supabase RPC: {e}")
+        return jsonify({'error': 'Could not generate user ID'}), 500
+
+# This handles the form submission
 @app.route('/api/submit', methods=['POST'])
 def submit():
     if not supabase:
@@ -142,7 +133,6 @@ def submit():
 
     next_id_str = form_data.get('next_item_id')
     if next_id_str and next_id_str != 'None':
-        # Use url_for with the 'catch_all' function name and the correct path
-        return redirect(url_for('catch_all', path=f'evaluate/{next_id_str}'))
+        return redirect(url_for('evaluate_item', item_id=int(next_id_str)))
     else:
-        return redirect(url_for('catch_all', path='complete'))
+        return redirect(url_for('complete'))
