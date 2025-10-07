@@ -8,7 +8,6 @@ import traceback
 import sys
 
 # --- App Initialization ---
-# The app object must be named 'app' for Vercel's WSGI runner to find it.
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # --- Supabase Initialization ---
@@ -21,12 +20,8 @@ def initialize_supabase():
     print(f"SUPABASE_URL present: {bool(SUPABASE_URL)}", file=sys.stderr)
     print(f"SUPABASE_KEY present: {bool(SUPABASE_KEY)}", file=sys.stderr)
     
-    if not SUPABASE_URL:
-        print("ERROR: SUPABASE_URL environment variable is missing", file=sys.stderr)
-        return None
-    
-    if not SUPABASE_KEY:
-        print("ERROR: SUPABASE_SERVICE_ROLE_KEY environment variable is missing", file=sys.stderr)
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("ERROR: Supabase environment variables are missing.", file=sys.stderr)
         return None
     
     try:
@@ -38,10 +33,9 @@ def initialize_supabase():
         traceback.print_exc(file=sys.stderr)
         return None
 
-# Initialize at module level
 supabase = initialize_supabase()
 
-# --- Image Data Loading (Unchanged) ---
+# --- Image Data Loading ---
 STATIC_IMAGE_FOLDER = 'static/evaluation_images'
 CLASS_ABBREVIATIONS = {
     'Copra Cake': 'CC', 'Cracked Corn': 'CORN', 'Feed Wheats': 'FW',
@@ -87,12 +81,10 @@ TOTAL_ITEMS = len(EVALUATION_ITEMS)
 
 # --- ROUTE DEFINITIONS ---
 
-# This handles the home page (e.g., yourdomain.com/)
 @app.route('/')
 def home():
     return redirect(url_for('evaluate_item', item_id=0))
 
-# This handles specific evaluation pages (e.g., yourdomain.com/evaluate/5)
 @app.route('/evaluate/<int:item_id>')
 def evaluate_item(item_id):
     if not 0 <= item_id < TOTAL_ITEMS:
@@ -102,12 +94,10 @@ def evaluate_item(item_id):
     next_id = item_id + 1 if item_id < TOTAL_ITEMS - 1 else None
     return render_template('index.html', item=item, item_id=item_id, total_items=TOTAL_ITEMS, previous_id=previous_id, next_id=next_id)
 
-# This handles the completion page
 @app.route('/complete')
 def complete():
     return render_template('complete.html')
 
-# This handles the API call for getting a new user ID
 @app.route('/api/get_new_user_id', methods=['GET'])
 def get_new_user_id():
     if not supabase:
@@ -125,7 +115,7 @@ def get_new_user_id():
         traceback.print_exc(file=sys.stderr)
         return jsonify({'error': f'Could not generate user ID: {str(e)}'}), 500
 
-# This handles the form submission
+# --- MODIFIED SUBMIT FUNCTION ---
 @app.route('/api/submit', methods=['POST'])
 def submit():
     if not supabase:
@@ -137,7 +127,8 @@ def submit():
         form_data = request.form.to_dict()
         print(f"Received form data: {form_data}", file=sys.stderr)
         
-        data_to_insert = {
+        # Prepare the data dictionary for the upsert operation.
+        data_to_upsert = {
             'session_identifier': int(form_data.get('session_identifier')),
             'eval_id': form_data.get('eval_id'), 
             'item_class': form_data.get('item_class'),
@@ -149,14 +140,24 @@ def submit():
             'comments': form_data.get('comments', '').strip()
         }
         
-        print(f"Attempting to insert: {data_to_insert}", file=sys.stderr)
-        response = supabase.table('evaluations').insert(data_to_insert).execute()
+        # --- THIS IS THE KEY CHANGE ---
+        # Use .upsert() instead of .insert().
+        # 'on_conflict' tells Supabase which columns form the unique key.
+        # If a row with this combination exists, it will be updated.
+        # If not, a new row will be inserted.
+        print(f"Attempting to upsert: {data_to_upsert}", file=sys.stderr)
+        response = supabase.table('evaluations').upsert(
+            data_to_upsert,
+            on_conflict='session_identifier, eval_id'
+        ).execute()
         
-        if len(response.data) == 0 and hasattr(response, 'error') and response.error:
-            raise Exception(response.error.message)
+        # Check for errors from the upsert operation.
+        if hasattr(response, 'error') and response.error:
+            raise Exception(f"Supabase upsert failed: {response.error.message}")
         
-        print("Successfully inserted a row into Supabase.", file=sys.stderr)
+        print("Successfully upserted a row into Supabase.", file=sys.stderr)
         
+        # Redirection logic remains the same.
         next_id_str = form_data.get('next_item_id')
         if next_id_str and next_id_str != 'None':
             return redirect(url_for('evaluate_item', item_id=int(next_id_str)))
