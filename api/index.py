@@ -59,8 +59,12 @@ def load_evaluation_items():
                 
                 safe_filename = quote(filename)
                 # Corrected the GitHub Raw URL structure
-                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/{BRANCH_NAME}/{STATIC_IMAGE_FOLDER}/{safe_filename}"
+                public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/refs/heads/{BRANCH_NAME}/{STATIC_IMAGE_FOLDER}/{safe_filename}"
                 
+                # # --- FINAL FIX: URL-safe quoting of the filename ---
+                # safe_filename = quote(filename)
+                # public_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{IMAGE_REPO_NAME}/refs/heads/{BRANCH_NAME}/static/evaluation_images/{safe_filename}"
+
                 image_data.append({
                     "metric": metric_part,
                     "class": class_name,
