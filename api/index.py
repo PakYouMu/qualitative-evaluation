@@ -38,7 +38,7 @@ def load_evaluation_items():
     # NOTE: It's better practice to get these from environment variables
     # but we will keep your original hardcoded values for now.
     GITHUB_USERNAME = "PakYouMu"
-    IMAGE_REPO_NAME = "DEGRADATION-QUALITATIVE-EVALUATION-FRAMEWORK" # Corrected repo name
+    IMAGE_REPO_NAME = "qualitative-evaluation-images" # Corrected repo name
     BRANCH_NAME = "main"
 
     # This path is for local discovery, but the URL is what's used in the app
