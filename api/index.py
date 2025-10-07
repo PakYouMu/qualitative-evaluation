@@ -1,4 +1,8 @@
 import os
+print("--- Vercel Environment Debug ---")
+print("SUPABASE_URL is set:", "SUPABASE_URL" in os.environ)
+print("SUPABASE_SERVICE_ROLE_KEY is set:", "SUPABASE_SERVICE_ROLE_KEY" in os.environ)
+print("------------------------------")
 import json
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import traceback 
