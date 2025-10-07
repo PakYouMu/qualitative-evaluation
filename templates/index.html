@@ -263,7 +263,7 @@
         .footer a { color: var(--brand-primary-dark); text-decoration: none; font-weight: 600; }
         .footer a:hover { text-decoration: underline; }
 
-        /* --- Styles for Instructions Button & Modal --- */
+        /* --- INTEGRATED: Styles for Instructions Button & Modal --- */
         .instructions-btn-corner {
             position: absolute;
             top: 6px;
@@ -331,20 +331,18 @@
                 <h3>Image Evaluation</h3>
                 <span class="item-counter">{{ item_id + 1 }} / {{ total_items }}</span>
             </div>
+            <!-- INTEGRATED: Instructions button -->
             <button id="openInstructionsBtn" class="instructions-btn-corner">?</button>
             <div class="eval-id">
                 ID: <strong>{{ item.eval_id }}</strong>
             </div>
         </div>
 
-        <!-- MODIFICATION: The form 'action' now points to the new API endpoint -->
         <form action="/api/submit" method="post">
             <input type="hidden" name="current_item_id" value="{{ item_id }}">
             
-            <!-- MODIFICATION: The persistent user ID input -->
             <input type="hidden" name="session_identifier" id="sessionIdentifierInput">
 
-            <!-- The rest of the hidden inputs are passed from the Python backend -->
             <input type="hidden" name="eval_id" value="{{ item.eval_id }}">
             <input type="hidden" name="item_class" value="{{ item.class }}">
             <input type="hidden" name="item_metric" value="{{ item.metric }}">
@@ -416,9 +414,28 @@
     </div>
 </div>
 
-<!-- INSTRUCTIONS MODAL HTML -->
+<!-- INTEGRATED: INSTRUCTIONS MODAL HTML -->
 <div id="instructionsModal" class="modal">
-    <!-- ... Modal content remains the same ... -->
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Evaluator Instructions</h3>
+        <h4>Objective</h4>
+        <p>Your expertise is needed to evaluate computer-generated images. Your goal is to determine which of two images (a <strong>"Test"</strong> image and a <strong>"Comparison"</strong> image) is a more faithful and useful representation. Please base your evaluation on the key details, the clarity of fine textures, the integrity of particle boundaries, and overall quality.</p>
+        <h4>How to Evaluate</h4>
+        <ol>
+            <li><strong>Examine the Image:</strong> The main viewer displays the "Test" and "Comparison" images, usually side-by-side.</li>
+            <li><strong>Use the Tools:</strong> This interface is designed for detailed inspection.
+                <ul>
+                    <li><strong>Zoom:</strong> Use your mouse wheel or the <code>+</code> / <code>-</code> buttons.</li>
+                    <li><strong>Pan:</strong> Click and drag the image to move it around while zoomed in.</li>
+                    <li><strong>Reset:</strong> Double-click the image or use the <code>⟲</code> button to return to the default view.</li>
+                </ul>
+            </li>
+            <li><strong>Rate Comparatively (Section 1):</strong> After examining the images, use the first form section to decide which image is better overall, or if they are equal in quality.</li>
+            <li><strong>Rate Absolutely (Section 2):</strong> In the second section, provide a separate 1-to-5 quality score for both the "Test" and "Comparison" images based on their individual merit.</li>
+            <li><strong>Submit:</strong> Click <strong>"Save & Next"</strong> to record your evaluation and move to the next item. Thank you for your careful analysis!</li>
+        </ol>
+    </div>
 </div>
 
 
@@ -447,7 +464,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const viewer = document.getElementById('imageViewer');
     
-    // --- MODIFICATION: New Persistent User Identifier Management ---
+    // --- Persistent User Identifier Management ---
     (async function() {
         const userKey = 'persistentUserIdentifier';
         let userId = localStorage.getItem(userKey);
@@ -457,7 +474,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             console.log("New user detected. Requesting a unique identifier from the server...");
             try {
-                // This now calls your Python API endpoint on Vercel
                 const response = await fetch('/api/get_new_user_id'); 
                 if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
                 
@@ -471,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error("FATAL: Could not fetch a new user identifier.", error);
-                userId = `fallback_${Date.now()}`; // Assign a timestamp-based fallback ID
+                userId = `fallback_${Date.now()}`;
             }
         }
 
@@ -481,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })();
     
-    // --- Instructions Modal Functionality ---
+    // --- INTEGRATED: Instructions Modal Functionality ---
     (function() {
         const modal = document.getElementById("instructionsModal");
         const btn = document.getElementById("openInstructionsBtn");
