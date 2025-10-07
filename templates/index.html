@@ -329,7 +329,7 @@
         <div class="header">
             <div class="header-top">
                 <h3>Image Evaluation</h3>
-                <span class="item-counter">{{ item_id + 1 }} / {{ total_items }}</span>
+                <span class="item-counter">{{ item_id + 1 }} of {{ total_items }}</span>
             </div>
             <!-- INTEGRATED: Instructions button -->
             <button id="openInstructionsBtn" class="instructions-btn-corner">?</button>
@@ -422,6 +422,13 @@
         <h4>Objective</h4>
         <p>Your expertise is needed to evaluate computer-generated images. Your goal is to determine which of two images (a <strong>"Test"</strong> image and a <strong>"Comparison"</strong> image) is a more faithful and useful representation. Please base your evaluation on the key details, the clarity of fine textures, the integrity of particle boundaries, and overall quality.</p>
         <h4>How to Evaluate</h4>
+        
+        <!-- Reassuring Message about Progress -->
+        <div style="background: #eef; border-left: 4px solid #66f; padding: 10px 20px; margin-bottom: 20px;">
+            <h5 style="margin-top:0; color: #44a;">Don't Worry About Progress!</h5>
+            <p style="margin-bottom:0;">This is a long evaluation, and you do not need to finish it in one sitting. Progress for each item is saved <strong>only when you click the "Save & Next" button</strong>. If you close your browser and return to this site later, the application will automatically bring you to the next item you need to evaluate, picking up right where you left off.</p>
+        </div>
+        
         <ol>
             <li><strong>Examine the Image:</strong> The main viewer displays the "Test" and "Comparison" images, usually side-by-side.</li>
             <li><strong>Use the Tools:</strong> This interface is designed for detailed inspection.
