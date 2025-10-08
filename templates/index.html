@@ -269,7 +269,7 @@
         .instructions-btn-corner {
             position: absolute;
             top: 6px;
-            right: 85px;
+            right: 120px;
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -393,10 +393,9 @@
         <div class="header">
             <div class="header-top">
                 <h3>Image Evaluation</h3>
+                <button id="openInstructionsBtn" class="instructions-btn-corner">?</button>
                 <span class="item-counter">{{ item_id + 1 }} of {{ total_items }}</span>
             </div>
-            <!-- INTEGRATED: Instructions button -->
-            <button id="openInstructionsBtn" class="instructions-btn-corner">?</button>
             <div class="eval-id">
                 ID: <strong>{{ item.eval_id }}</strong>
             </div>
